@@ -1,8 +1,41 @@
 # Google Play 리뷰 수집 기능 구현 (fetch 함수는 실제 API 연동 시 구현)
-def fetch_google_play_reviews(app_id):
-    # 실제 구현에서는 Google Play API 또는 비공식 라이브러리 사용
-    # 테스트에서는 mocking
-    return []
+
+import os
+import json
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+
+SERVICE_ACCOUNT_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.secrets', 'google_play_service_account_key.json')
+SCOPES = ['https://www.googleapis.com/auth/androidpublisher']
+
+def fetch_google_play_reviews(app_id, max_results=100):
+    """
+    Google Play Developer API를 통해 앱 리뷰를 수집합니다.
+    반환: [{author, rating, text} ...]
+    """
+    credentials = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+    service = build('androidpublisher', 'v3', credentials=credentials)
+    reviews_resource = service.reviews()
+    result = []
+    token = None
+    fetched = 0
+    while fetched < max_results:
+        req = reviews_resource.list(packageName=app_id, maxResults=min(100, max_results-fetched), token=token)
+        resp = req.execute()
+        for review in resp.get('reviews', []):
+            for entry in review.get('comments', []):
+                user = review.get('authorName', '익명')
+                rating = entry.get('userComment', {}).get('starRating', 0)
+                text = entry.get('userComment', {}).get('text', '')
+                result.append({'author': user, 'rating': rating, 'text': text})
+                fetched += 1
+                if fetched >= max_results:
+                    break
+        token = resp.get('tokenPagination', {}).get('nextPageToken')
+        if not token:
+            break
+    return result
 
 class GooglePlayReviewCollector:
     def __init__(self, app_id):
