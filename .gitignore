@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# VSCode
+.vscode/
+
+# Secrets
+.secrets/
+*.json
+
+# Test
+htmlcov/
+.coverage
+
+# OS
+.DS_Store
