@@ -8,7 +8,7 @@ from googleapiclient.discovery import build
 SERVICE_ACCOUNT_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.secrets', 'google_play_service_account_key.json')
 SCOPES = ['https://www.googleapis.com/auth/androidpublisher']
 
-def fetch_google_play_reviews(app_id, max_results=100):
+def fetch_google_play_reviews(app_id, max_results=1000):
     """
     Google Play Developer API를 통해 앱 리뷰를 수집합니다.
     반환: [{author, rating, text} ...]
