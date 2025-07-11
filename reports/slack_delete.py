@@ -34,6 +34,6 @@ def delete_slack_message_by_url(url: str):
     return response.json()
 
 if __name__ == "__main__":
-    url = "https://supajaiscool.slack.com/archives/C0802303F8U/p1752133971063679?thread_ts=1752113397.669759&cid=C0802303F8U"
+    url = "https://supajaiscool.slack.com/archives/C0802303F8U/p1752195879200229?thread_ts=1752113397.669759&cid=C0802303F8U"
     resp = delete_slack_message_by_url(url)
     print("삭제 응답:", resp)

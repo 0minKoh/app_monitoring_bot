@@ -1,0 +1,39 @@
+name: App Store 리뷰 슬랙 자동 보고
+
+on:
+  schedule:
+    # 매일 오전 9시(한국시간, UTC+9) → UTC 0시
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    env:
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      APPSTORE_PRIVATE_KEY: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+      APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+      APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python (3.13)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests pyjwt cryptography
+
+      - name: Set up secrets files
+        run: |
+          mkdir -p .secrets
+          echo "$SLACK_BOT_TOKEN" > .secrets/slack_bot_token.txt
+          echo "$APPSTORE_PRIVATE_KEY" > .secrets/AuthKey_${{ env.APPSTORE_KEY_ID }}.p8
+
+      - name: Run App Store 리뷰 슬랙 자동 보고
+        run: |
+          python send_appstore_review_report.py
