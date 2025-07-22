@@ -21,17 +21,22 @@ def fetch_google_play_reviews(app_id, max_results=1000):
     token = None
     fetched = 0
     while fetched < max_results:
-        req = reviews_resource.list(packageName=app_id, maxResults=min(100, max_results-fetched), token=token)
+        req = reviews_resource.list(packageName=app_id, maxResults=100, token=token)
         resp = req.execute()
+        print("[DEBUG] API 응답 Response: ", json.dumps(resp, indent=2))
         for review in resp.get('reviews', []):
-            for entry in review.get('comments', []):
-                user = review.get('authorName', '익명')
-                rating = entry.get('userComment', {}).get('starRating', 0)
-                text = entry.get('userComment', {}).get('text', '')
-                result.append({'author': user, 'rating': rating, 'text': text})
-                fetched += 1
-                if fetched >= max_results:
-                    break
+            # comments 리스트가 비어있는 경우를 대비해 확인합니다.
+            if not review.get('comments'):
+                continue
+
+            user_comment = review['comments'][0]['userComment']
+            user = review.get('authorName', '익명')
+            rating = user_comment.get('starRating', 0)
+            text = user_comment.get('text', '')
+            result.append({'author': user, 'rating': rating, 'text': text})
+            fetched += 1
+            if fetched >= max_results:
+                break
         token = resp.get('tokenPagination', {}).get('nextPageToken')
         if not token:
             break
